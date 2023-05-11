@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5817296347430287473
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8168681545793915518}
+  m_Layer: 0
+  m_Name: TileCostOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8168681545793915518
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817296347430287473}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3563809972581989964}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7056581230392256382
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3563809972581989964}
+  - component: {fileID: 6293914953741284367}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3563809972581989964
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7056581230392256382}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8168681545793915518}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6293914953741284367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7056581230392256382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d344c841701ba846af5b369500da5b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Type: 0
+  m_Tilemap: {fileID: 0}
+  m_ObstacleTiles:
+  - {fileID: 11400000, guid: a629b8119e87d6e4c9c32eb191d118b8, type: 2}
+  m_WalkableTiles:
+  - {fileID: 11400000, guid: d04fcb60ead56744087febe1c15d3b37, type: 2}
+  - {fileID: 11400000, guid: 0cfb82bbfff8b0b4ca49c39fcbbfcc43, type: 2}
+  - {fileID: 11400000, guid: 4b31c9ce328ab8341b2ee854d5e9d034, type: 2}
+  - {fileID: 11400000, guid: 5feb8fc45d7e1834d88b499848f05eac, type: 2}
+  - {fileID: 11400000, guid: c9fc34331a16f2044b91f45955af51c5, type: 2}
+  - {fileID: 11400000, guid: 902a3c1ceb08ce049ab903ce1c3f81f1, type: 2}
+  - {fileID: 11400000, guid: 15868ec232240124395fc5a08866f959, type: 2}
+  - {fileID: 11400000, guid: 19a14a2ec0e84274d9642b85d675b2cf, type: 2}
+  m_groundCost: 1
+  m_slowCost: 3
+  m_TileCostOverlay: {fileID: 5817296347430287473}
+  m_TileTextOverlayPrefab: {fileID: 8634644294138095078, guid: 0c6b7f9d4cee5974b9c4add720a42c5f, type: 3}

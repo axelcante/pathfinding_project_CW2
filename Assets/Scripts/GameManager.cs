@@ -5,139 +5,107 @@ using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Tilemap m_Tilemap;
-    [SerializeField] private TileBase[] m_ObstacleTiles;
-    [SerializeField] private TileBase[] m_WalkableTiles;
-    [SerializeField] private TileBase m_GoalTile;
-    [SerializeField] private TileBase m_StartTile;
-
-    // These vectors represent the positions of the start and end tiles
-    // TODO: MAKE PRIVATE
-    public Vector3Int m_StartAstar;
-    public Vector3Int m_StartDijk;
-    public Vector3Int m_Goal;
-
-
-    // These dictionaries will keep track of the calculated distances and the previously visited Tiles
-    private Dictionary<Vector3Int, int> m_Distances = new Dictionary<Vector3Int, int>();
-    private Dictionary<Vector3Int, Vector3Int> m_Prev = new Dictionary<Vector3Int, Vector3Int>();
-
-
-
-    // Start is called before the first frame update
-    // Here we initialize the collections and run the algorithms
-    void Start()
+    // SINGLETON DECLARATION
+    private static GameManager m_instance;
+    public static GameManager Instance
     {
-        // Set the distance to the start tile to 0 and all other tiles to infinity
-        m_Distances[m_StartAstar] = 0;
-        foreach (Vector3Int pos in m_Tilemap.cellBounds.allPositionsWithin) {
-            m_Distances[pos] = int.MaxValue;
-            Debug.Log("Got one!");
+        get { return m_instance; }
+    }
+
+    [Header("Tilemap & Tiles")]
+    [SerializeField] private Tilemap m_Tilemap;
+    [SerializeField] private TileBase m_P1StartTile;
+    [SerializeField] private TileBase m_P2StartTile;
+    [SerializeField] private TileBase m_GoalTile;
+
+    [Header("Player Settings")]
+    [SerializeField] private GameObject m_PlayerPrefab;
+
+    [Header("Game Settings")]
+    public int groundCost;
+    public int slowCost;
+    private Algorithm m_Player1;
+    private Algorithm m_Player2;
+
+
+
+    // Awake is called when this script instance is being loaded
+    private void Awake ()
+    {
+        // SINGLETON DECLARATION
+        if (m_instance != null && m_instance != this)
+            Destroy(gameObject);
+        else
+            m_instance = this;
+    }
+
+
+
+    // Update is called once per frame
+    private void Update ()
+    {
+        // TODO: Move to a UI -- R initializes Player 1
+        if (Input.GetKeyDown(KeyCode.R)) {
+            // Remove the reference to a player if already instantiated
+            if (m_Player1)
+                Destroy(m_Player1.gameObject);
+            m_Player1 = InstantiatePlayer();
+            InitializePlayer(m_Player1);
         }
 
-        // Create a queue (i.e., First-In-First-Out) to store tiles to visit, and add the first one
-        PriorityQueue<Vector3Int> queue = new PriorityQueue<Vector3Int>();
-        queue.Enqueue(m_StartDijk, 0);
+        // TODO: Move to a UI -- T initializes Player 2
+        if (Input.GetKeyDown(KeyCode.T)) {
+            // Remove the reference to a player if already instantiated
+            if (m_Player2)
+                Destroy(m_Player2.gameObject);
+            m_Player2 = InstantiatePlayer();
+            InitializePlayer(m_Player2);
+            m_Player2.Type = AlgorithmType.AstarManhattan;
+        }
 
-        // As long as there are still tiles to visit, dequeue the one with the highest priority
-        while (queue.Count > 0) {
-            Vector3Int currentTile = queue.Dequeue();
+        // TODO: Move to a UI -- Run all instantiated algorithms (Dijkstra and versions of A*/Astar)
+        if (Input.GetKeyDown(KeyCode.F)) {
+            if (m_Player1)
+                m_Player1.RunAlgorithm();
 
-            // Check if the current tile visited is the end tile, in which case we end
-            if (currentTile == m_Goal)
-                break;
+            if (m_Player2)
+                m_Player2.RunAlgorithm();
+        }
 
-            // Get the cost of the current tile
-            // TODO: HEURISTICS
-            int cost = GetTileCost(currentTile);
+        // TODO: Move to a UI -- Display overlays
+        if (Input.GetKeyDown(KeyCode.S)) {
+            if (m_Player1) {
+                m_Player1.m_TileCostOverlay.SetActive(!m_Player1.m_TileCostOverlay.activeSelf);
+            }
 
-            foreach (Vector3Int neighbour in GetNeighbours(currentTile)) {
-                // Check if the neighbour is walkable
-                if (!IsWalkable(neighbour))
-                    continue;
-
-                // Calculate the new distance to the neighbour
-                int distanceToNeighbour = m_Distances[currentTile] + cost;
-
-                // If the new distance is less than the current distance, update it
-                if (distanceToNeighbour < m_Distances[neighbour]) {
-                    m_Distances[neighbour] = distanceToNeighbour;
-                    m_Prev[neighbour] = currentTile;
-
-                    // Add the neighbour to the queue
-                    queue.Enqueue(neighbour, distanceToNeighbour);
-                }
+            if (m_Player2) {
+                m_Player2.m_TileCostOverlay.SetActive(!m_Player2.m_TileCostOverlay.activeSelf);
             }
         }
-        // End of while (queue.Count > 0)
-
-        // Once we're done, we can reconstruct the path
-        List<Vector3Int> path = new List<Vector3Int>();
-        Vector3Int current = m_Goal;
-
-        while (current != m_StartDijk) {
-            path.Add(current);
-            current = m_Prev[current];
-        }
-
-        path.Reverse();
-
-        // TODO: MOVEMENT HERE
     }
 
 
 
-    // Detect if a position is a walkable tile
-    private bool IsWalkable (Vector3Int tile)
+    // Instantiate a new player and return the reference to its Algorithm script
+    private Algorithm InstantiatePlayer ()
     {
-        TileBase tileBase = m_Tilemap.GetTile(tile);
+        GameObject player = Instantiate(m_PlayerPrefab);
 
-        // Check in the list of walkable tiles
-        foreach (TileBase walkableTile in m_WalkableTiles) {
-            if (tileBase == walkableTile)
-                return true;
-        }
+        if (player.GetComponent<Algorithm>())
+            return player.GetComponent<Algorithm>();
 
-        // TODO: NOT NEEDED?
-        foreach (TileBase obstacleTile in m_ObstacleTiles) {
-            if (tileBase == obstacleTile)
-                return false;
-        }
-
-        // TODO: DEFAULT SHOULD BE ENOUGH
-        return false;
+        // ERROR CASE
+        Debug.LogWarning("Could not find Algorithm component on new player");
+        return null;
     }
 
 
-    // Fetch the movement cost assigned to a particular tile
-    // TODO
-    private int GetTileCost (Vector3Int tile)
+
+    // Initialize a new player's (algorithm) parameters
+    private void InitializePlayer (Algorithm player)
     {
-        // Same logic as before but with a switch case for each tile with extra movement
-        // I started naming some in the tile set, like SLOW_1, SLOW_2...
-        // Don't need to have loads, just one type will do
-
-        // CODE
-        //TileBase tileBase = m_Tilemap.GetTile(tile);
-
-        //foreach (TileBase walkableTile in m_WalkableTiles) {
-        //    if (tileBase == walkableTile) {
-        //        // Return the cost of the tile based on its type
-        //        switch (tileBase.name) {
-        //            default:
-        //                return 1;
-        //        }
-        //    }
-        //}
-
-        return 1;
-    }
-
-    
-
-    // Get the tiles which are adjacent to the current tile
-    private List<Vector3Int> GetNeighbours (Vector3Int tile)
-    {
-        return new List<Vector3Int>();
+        player.SetTileMap(m_Tilemap);
+        player.SetStartTile(player == m_Player1 ? m_P1StartTile : m_P2StartTile);
+        player.SetGoalTile(m_GoalTile);
     }
 }
