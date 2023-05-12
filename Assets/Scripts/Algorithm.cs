@@ -1,6 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static UnityEditor.PlayerSettings;
 
 public enum AlgorithmType
 {
@@ -23,11 +26,16 @@ public class Algorithm : MonoBehaviour
     [Header("UI")]
     public GameObject m_TileCostOverlay;
     public GameObject m_TileTextOverlayPrefab;
+    public GameObject m_Character;
+    public SpriteRenderer m_SpriteRenderer;
+    public float m_tileOffset = 0.5f;
+    public float m_moveSpeed = 1f;
+    public float m_pauseBetweenTiles = 0.5f;
 
     // StartPos and GoalPos are found once a StartTile has been assigned
     private Vector3Int m_StartPos;
     private Vector3Int m_GoalPos;
-    private List<Vector3Int> m_Path = new List<Vector3Int>();
+    private Queue<Vector3Int> m_Path = new Queue<Vector3Int>();
 
     // These dictionaries will keep track of the calculated distances and the previously visited Tiles
     private Dictionary<Vector3Int, int> m_Distances = new Dictionary<Vector3Int, int>();
@@ -42,33 +50,6 @@ public class Algorithm : MonoBehaviour
     {
         // The cost overlay is set to inactive by default
         m_TileCostOverlay.SetActive(false);
-    }
-
-
-
-    // Find the tiles where both Dijkstra and Astar will start from as well as the Goal tile position
-    private void FindTilePositions ()
-    {
-        if (m_StartTile && m_GoalTile) {
-            bool sFound = false;
-            bool gFound = false;
-
-            // Find the position of the start tile in the tilemap
-            foreach (Vector3Int position in m_Tilemap.cellBounds.allPositionsWithin) {
-                if (m_Tilemap.GetTile(position) == m_StartTile) {
-                    m_StartPos = position;
-                    sFound = true;
-                } else if (m_Tilemap.GetTile(position) == m_GoalTile) {
-                    m_GoalPos = position;
-                    gFound = true;
-                }
-
-                if (sFound && gFound)
-                    return;
-            }
-        }
-
-        Debug.LogWarning("Could not find either the start position or the goal position!");
     }
 
 
@@ -167,15 +148,39 @@ public class Algorithm : MonoBehaviour
     {
         return Mathf.Abs(p1.x - p2.x) + Mathf.Abs(p1.y - p2.y);
     }
-    
-    
-    
+
+
+
+    // Find the tiles where this algorithm will start from as well as the Goal tile position
+    public void InitTilePositions ()
+    {
+        if (m_StartTile && m_GoalTile) {
+            bool sFound = false;
+            bool gFound = false;
+
+            // Find the position of the start tile in the tilemap
+            foreach (Vector3Int position in m_Tilemap.cellBounds.allPositionsWithin) {
+                if (m_Tilemap.GetTile(position) == m_StartTile) {
+                    m_StartPos = position;
+                    sFound = true;
+                } else if (m_Tilemap.GetTile(position) == m_GoalTile) {
+                    m_GoalPos = position;
+                    gFound = true;
+                }
+
+                if (sFound && gFound)
+                    return;
+            }
+        }
+
+        Debug.LogWarning("Could not find either the start position or the goal position!");
+    }
+
+
+
     // Run the algorithm -- THIS IS WHERE DIJKSRTA/A* ARE IMPLEMENTED
     public void RunAlgorithm ()
     {
-        // Find the Vector3Int positions of Astar and Dijkstra starts
-        FindTilePositions();
-
         // Set the distance to the start tile to 0 and all other tiles to infinity
         foreach (Vector3Int pos in m_Tilemap.cellBounds.allPositionsWithin)
             m_Distances[pos] = int.MaxValue;
@@ -226,13 +231,59 @@ public class Algorithm : MonoBehaviour
 
         // Once we're done, we can reconstruct the path
         Vector3Int current = m_GoalPos;
-
+        List<Vector3Int> path = new List<Vector3Int>();
         while (current != m_StartPos) {
-            m_Path.Add(current);
+            path.Add(current);
             current = m_Prev[current];
         }
 
-        m_Path.Reverse();
+        path.Reverse();
+        m_Path = new Queue<Vector3Int>(path);
+    }
+
+
+
+    // Display the character sprite on start position
+    public void InitCharPosition () => MoveCharacter(m_StartPos);
+
+
+
+    // Move character to specific position with offset
+    public void MoveCharacter (Vector3Int newPos) => m_Character.transform.position = new Vector3(
+            newPos.x + m_tileOffset,
+            newPos.y + m_tileOffset,
+            newPos.z
+        );
+
+
+
+    // Get the new position offset to be centered on a tile (for smooth movement in IEnumerator)
+    public Vector3 GetNewOffsetPosition (Vector3Int newPos) => new Vector3(
+            newPos.x + m_tileOffset,
+            newPos.y + m_tileOffset,
+            newPos.z
+        );
+
+
+
+    // Start pathing along the ideal path
+    public IEnumerator StartPathing ()
+    {
+        Vector3 lastPosition = m_Character.transform.position;
+
+        while (m_Path.Count > 0) {
+            Vector3Int nextPos = m_Path.Dequeue();
+            Vector3 desiredPosition = GetNewOffsetPosition(nextPos);
+            float lerpVal = 0;
+            while (lerpVal < 1) {
+                lerpVal += Time.deltaTime * m_moveSpeed;
+                m_Character.transform.position = Vector3.Lerp(lastPosition, desiredPosition, lerpVal);
+                yield return new WaitForEndOfFrame();
+            }
+            m_Character.transform.position = desiredPosition;
+            lastPosition = desiredPosition;
+            yield return new WaitForSeconds(m_pauseBetweenTiles);
+        }
     }
 
 
@@ -273,4 +324,5 @@ public class Algorithm : MonoBehaviour
     public void SetTileMap (Tilemap tilemap) => m_Tilemap = tilemap;
     public void SetStartTile (TileBase tile) => m_StartTile = tile;
     public void SetGoalTile (TileBase tile) => m_GoalTile = tile;
+    public void SetSprite (Sprite sprite) => m_SpriteRenderer.sprite = sprite;
 }

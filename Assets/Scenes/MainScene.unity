@@ -331,7 +331,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -7413,10 +7413,10 @@ MonoBehaviour:
   m_P2StartTile: {fileID: 11400000, guid: 19a14a2ec0e84274d9642b85d675b2cf, type: 2}
   m_GoalTile: {fileID: 11400000, guid: d04fcb60ead56744087febe1c15d3b37, type: 2}
   m_PlayerPrefab: {fileID: 7056581230392256382, guid: e11ffcaabcaf25e46b8bce2de71f0eb7, type: 3}
+  m_P1Sprite: {fileID: 21300000, guid: 284408875d6cca5419e9f2e0b06d66be, type: 3}
+  m_P2Sprite: {fileID: 21300000, guid: 3244f65aea3944d4c883866e7dd7efb8, type: 3}
   groundCost: 1
   slowCost: 10
-  m_Player1: {fileID: 0}
-  m_Player2: {fileID: 0}
 --- !u!4 &1806945180
 Transform:
   m_ObjectHideFlags: 0

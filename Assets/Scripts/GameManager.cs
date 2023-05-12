@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Player Settings")]
     [SerializeField] private GameObject m_PlayerPrefab;
+    [SerializeField] private Sprite m_P1Sprite;
+    [SerializeField] private Sprite m_P2Sprite;
 
     [Header("Game Settings")]
     public int groundCost;
@@ -73,14 +75,24 @@ public class GameManager : MonoBehaviour
         }
 
         // TODO: Move to a UI -- Display overlays
+        // Must check when activating an overlay that the other one is off;
+        // otherwise the overlays will overlap on the tiles where both algorithms make calculations
+        // Maybe add color to the overlay text?
         if (Input.GetKeyDown(KeyCode.S)) {
-            if (m_Player1) {
+            if (m_Player1)
                 m_Player1.m_TileCostOverlay.SetActive(!m_Player1.m_TileCostOverlay.activeSelf);
-            }
 
-            if (m_Player2) {
+            if (m_Player2)
                 m_Player2.m_TileCostOverlay.SetActive(!m_Player2.m_TileCostOverlay.activeSelf);
-            }
+        }
+
+        // TODO: Move to a UI -- Start movement along path
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            if (m_Player1)
+                StartCoroutine(m_Player1.StartPathing());
+
+            if (m_Player2)
+                StartCoroutine(m_Player2.StartPathing());
         }
     }
 
@@ -105,7 +117,10 @@ public class GameManager : MonoBehaviour
     private void InitializePlayer (Algorithm player)
     {
         player.SetTileMap(m_Tilemap);
+        player.SetSprite(player == m_Player1 ? m_P1Sprite : m_P2Sprite);
         player.SetStartTile(player == m_Player1 ? m_P1StartTile : m_P2StartTile);
         player.SetGoalTile(m_GoalTile);
+        player.InitTilePositions();
+        player.InitCharPosition();
     }
 }
