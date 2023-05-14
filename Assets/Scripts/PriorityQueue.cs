@@ -8,14 +8,14 @@ using System.Collections.Generic;
 
 public class PriorityQueue<T>
 {
-    private List<Tuple<T, int>> elements = new List<Tuple<T, int>>();
+    private List<Tuple<T, float>> elements = new List<Tuple<T, float>>();
 
     public int Count
     {
         get { return elements.Count; }
     }
 
-    public void Enqueue (T item, int priority)
+    public void Enqueue (T item, float priority)
     {
         elements.Add(Tuple.Create(item, priority));
     }

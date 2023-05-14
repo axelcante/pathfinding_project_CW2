@@ -1,14 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static UnityEditor.PlayerSettings;
 
 public enum AlgorithmType
 {
-    Dijkstra,
-    AstarManhattan,
+    Dijkstra = 0,
+    AstarManhattan = 1,
+    AstarEuclidean = 2,
+    DiagonalDistance = 3,
+    ChebyshevDistance = 4,
+    OctileDistance = 5
 }
 
 public class Algorithm : MonoBehaviour
@@ -130,13 +132,17 @@ public class Algorithm : MonoBehaviour
 
 
     // This is where algorithms set the priority of the PriorityQueue list. For Astar, this is also where heuristics come into play
-    private int CalculatePriority (int cost, Vector3Int neighbour = default(Vector3Int))
+    private float CalculatePriority (int cost, Vector3Int neighbour = default(Vector3Int))
     {
         switch (Type) {
             case AlgorithmType.Dijkstra:
                 return cost;
             case AlgorithmType.AstarManhattan:
                 return cost + ManhattanDistance(neighbour, m_GoalPos);
+            case AlgorithmType.AstarEuclidean:
+                return cost + EuclideanDistance(neighbour, m_GoalPos);
+            case AlgorithmType.DiagonalDistance:
+                return cost + DiagonalDistance(neighbour, m_GoalPos);
             default:
                 return cost;
         }
@@ -148,6 +154,50 @@ public class Algorithm : MonoBehaviour
     private int ManhattanDistance (Vector3Int p1,  Vector3Int p2)
     {
         return Mathf.Abs(p1.x - p2.x) + Mathf.Abs(p1.y - p2.y);
+    }
+
+
+
+    // HEURISTIC: Calculate the Euclidean Distance between current tile and goal tile (ASTAR)
+    private float EuclideanDistance (Vector3Int p1, Vector3Int p2)
+    {
+        return Mathf.Sqrt(Mathf.Pow(p1.x - p2.x, 2) + Mathf.Pow(p1.y - p2.y, 2));
+    }
+
+
+
+    // HEURISTIC: Calculate the Diagonal Distance between current tile and goal tile (ASTAR)
+    // This is not ideal in our case since this imagines a diagonal move is possible
+    private float DiagonalDistance (Vector3Int p1, Vector3Int p2)
+    {
+        int dx = Mathf.Abs(p1.x - p2.x);
+        int dy = Mathf.Abs(p1.y - p2.y);
+        int dist = 1;
+        float diagDist = Mathf.Sqrt(2);
+
+        return (dx + dy) + (diagDist - 2 * dist) * Mathf.Min(dx, dy);
+    }
+
+
+
+    // HEURITSIC: Calculate the Chebyshev Distance between current tile and goal tile (ASTAR)
+    // This is not ideal as it is originally designed for Chess, where diagonal move is allowed
+    public float ChebyshevDistance (Vector3Int p1, Vector3Int p2)
+    {
+        int dx = Mathf.Abs(p1.x - p2.x);
+        int dy = Mathf.Abs(p1.y - p2.y);
+        return Mathf.Max(dx, dy);
+    }
+
+
+
+    // HEURISTIC: Calculate the Ocile Distance between current tile and goal tile (ASTAR)
+    // This is similar to the Chevyshev Distance as it allows diagonal movement, but it adds a cost factor to that movement
+    public float OctileDistance (Vector3Int p1, Vector3Int p2)
+    {
+        int dx = Mathf.Abs(p1.x - p2.x);
+        int dy = Mathf.Abs(p1.y - p2.y);
+        return Mathf.Max(dx, dy) + (Mathf.Sqrt(2) - 1) * Mathf.Min(dx, dy);
     }
 
 
@@ -215,7 +265,7 @@ public class Algorithm : MonoBehaviour
                     // Add the neighbour to the queue with a priority
                     // This is where Dijkstra and Astar diverge; for Dijkstra, priority is simply the cost
                     // But for Astar, it is based on a heuristic
-                    int priority = CalculatePriority(distanceToNeighbour, neighbour);
+                    float priority = CalculatePriority(distanceToNeighbour, neighbour);
                     queue.Enqueue(neighbour, priority);
 
                     // Add a text field with the cost on top of the tile to show what calculations have been done
