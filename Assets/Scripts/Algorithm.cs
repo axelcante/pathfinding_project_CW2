@@ -8,9 +8,9 @@ public enum AlgorithmType
     Dijkstra = 0,
     AstarManhattan = 1,
     AstarEuclidean = 2,
-    DiagonalDistance = 3,
-    ChebyshevDistance = 4,
-    OctileDistance = 5
+    AstarDiagonal = 3,
+    AstarChebyshev = 4,
+    AstarOctile = 5
 }
 
 public class Algorithm : MonoBehaviour
@@ -141,8 +141,12 @@ public class Algorithm : MonoBehaviour
                 return cost + ManhattanDistance(neighbour, m_GoalPos);
             case AlgorithmType.AstarEuclidean:
                 return cost + EuclideanDistance(neighbour, m_GoalPos);
-            case AlgorithmType.DiagonalDistance:
+            case AlgorithmType.AstarDiagonal:
                 return cost + DiagonalDistance(neighbour, m_GoalPos);
+            case AlgorithmType.AstarChebyshev:
+                return cost + ChebyshevDistance(neighbour, m_GoalPos);
+            case AlgorithmType.AstarOctile:
+                return cost + OctileDistance(neighbour, m_GoalPos);
             default:
                 return cost;
         }

@@ -179,4 +179,4 @@ MonoBehaviour:
   m_SpriteRenderer: {fileID: 6563413882415994901}
   m_tileOffset: 0.5
   m_moveSpeed: 5
-  m_pauseBetweenTiles: 0.5
+  m_pauseBetweenTiles: 0.2
