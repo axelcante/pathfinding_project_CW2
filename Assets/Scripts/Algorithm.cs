@@ -44,6 +44,7 @@ public class Algorithm : MonoBehaviour
     private Dictionary<Vector3Int, GameObject> m_OverlaidTiles = new Dictionary<Vector3Int, GameObject>();
 
 
+    private string m_name;
 
     // Start is called before the first frame after this script instance is created
     private void Start ()
@@ -222,7 +223,8 @@ public class Algorithm : MonoBehaviour
                     TileText overlayText = overlayTile.GetComponent<TileText>();
                     if (overlayText) {
                         overlayText.SetText(distanceToNeighbour.ToString());
-                        overlayText.SetPosition(neighbour);
+                        overlayText.SetPosition(neighbour, m_name);
+                        overlayText.SetColor(m_name);
                     }
                 }
             }
@@ -325,4 +327,5 @@ public class Algorithm : MonoBehaviour
     public void SetStartTile (TileBase tile) => m_StartTile = tile;
     public void SetGoalTile (TileBase tile) => m_GoalTile = tile;
     public void SetSprite (Sprite sprite) => m_SpriteRenderer.sprite = sprite;
+    public void SetName (string name) => m_name = name;
 }

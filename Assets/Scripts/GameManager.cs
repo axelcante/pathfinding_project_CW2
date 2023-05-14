@@ -42,62 +42,6 @@ public class GameManager : MonoBehaviour
     }
 
 
-
-    // Update is called once per frame
-    private void Update ()
-    {
-        // TODO: Move to a UI -- R initializes Player 1
-        if (Input.GetKeyDown(KeyCode.R)) {
-            // Remove the reference to a player if already instantiated
-            if (m_Player1)
-                Destroy(m_Player1.gameObject);
-            m_Player1 = InstantiatePlayer();
-            InitializePlayer(m_Player1);
-        }
-
-        // TODO: Move to a UI -- T initializes Player 2
-        if (Input.GetKeyDown(KeyCode.T)) {
-            // Remove the reference to a player if already instantiated
-            if (m_Player2)
-                Destroy(m_Player2.gameObject);
-            m_Player2 = InstantiatePlayer();
-            InitializePlayer(m_Player2);
-            m_Player2.Type = AlgorithmType.AstarManhattan;
-        }
-
-        // TODO: Move to a UI -- Run all instantiated algorithms (Dijkstra and versions of A*/Astar)
-        if (Input.GetKeyDown(KeyCode.F)) {
-            if (m_Player1)
-                m_Player1.RunAlgorithm();
-
-            if (m_Player2)
-                m_Player2.RunAlgorithm();
-        }
-
-        // TODO: Move to a UI -- Display overlays
-        // Must check when activating an overlay that the other one is off;
-        // otherwise the overlays will overlap on the tiles where both algorithms make calculations
-        // Maybe add color to the overlay text?
-        if (Input.GetKeyDown(KeyCode.S)) {
-            if (m_Player1)
-                m_Player1.m_TileCostOverlay.SetActive(!m_Player1.m_TileCostOverlay.activeSelf);
-
-            if (m_Player2)
-                m_Player2.m_TileCostOverlay.SetActive(!m_Player2.m_TileCostOverlay.activeSelf);
-        }
-
-        // TODO: Move to a UI -- Start movement along path
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            if (m_Player1)
-                StartCoroutine(m_Player1.StartPathing());
-
-            if (m_Player2)
-                StartCoroutine(m_Player2.StartPathing());
-        }
-    }
-
-
-
     // Instantiate a new player and return the reference to its Algorithm script
     private Algorithm InstantiatePlayer ()
     {
@@ -120,7 +64,49 @@ public class GameManager : MonoBehaviour
         player.SetSprite(player == m_Player1 ? m_P1Sprite : m_P2Sprite);
         player.SetStartTile(player == m_Player1 ? m_P1StartTile : m_P2StartTile);
         player.SetGoalTile(m_GoalTile);
+        player.SetName(player == m_Player1 ? "player1" : "player2");
         player.InitTilePositions();
         player.InitCharPosition();
+    }
+
+    public void RunAlgorithms(){
+        // TODO: Move to a UI -- Run all instantiated algorithms (Dijkstra and versions of A*/Astar)
+        if (m_Player1)
+            m_Player1.RunAlgorithm();
+
+        if (m_Player2)
+            m_Player2.RunAlgorithm();      
+    }
+
+    public void InstantiatePlayer(int i){
+        if (i == 1){
+            if (m_Player1)
+                Destroy(m_Player1.gameObject);
+            m_Player1 = InstantiatePlayer();
+            InitializePlayer(m_Player1);
+        }
+        else if(i == 2){
+             if (m_Player2)
+                Destroy(m_Player2.gameObject);
+            m_Player2 = InstantiatePlayer();
+            InitializePlayer(m_Player2);
+            m_Player2.Type = AlgorithmType.AstarManhattan;
+        }
+    }
+
+    public void DisplayOverlays(int i){
+        if (m_Player1 && i == 1)
+            m_Player1.m_TileCostOverlay.SetActive(!m_Player1.m_TileCostOverlay.activeSelf);
+
+        if (m_Player2 && i == 2)
+            m_Player2.m_TileCostOverlay.SetActive(!m_Player2.m_TileCostOverlay.activeSelf);
+    }
+
+    public void StartSimulation(){
+        if (m_Player1)
+                StartCoroutine(m_Player1.StartPathing());
+
+        if (m_Player2)
+                StartCoroutine(m_Player2.StartPathing());
     }
 }
